@@ -1,3 +1,4 @@
 rootProject.name = 'custom-message-broker'
 include 'nio'
 include 'netty-chat'
+include 'simple-message-broker'
