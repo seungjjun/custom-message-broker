@@ -5,11 +5,15 @@ import com.prac.kafka.common.model.Packet;
 import com.prac.kafka.protocol.MessageDecoder;
 import com.prac.kafka.protocol.MessageEncoder;
 import com.prac.kafka.protocol.MessageFrameDecoder;
+import com.prac.kafka.protocol.request.CommitOffsetRequest;
 import com.prac.kafka.protocol.request.CreateTopicRequest;
 import com.prac.kafka.protocol.request.FetchRequest;
+import com.prac.kafka.protocol.request.GetOffsetRequest;
 import com.prac.kafka.protocol.request.ProduceRequest;
+import com.prac.kafka.protocol.response.CommitOffsetResponse;
 import com.prac.kafka.protocol.response.CreateTopicResponse;
 import com.prac.kafka.protocol.response.FetchResponse;
+import com.prac.kafka.protocol.response.GetOffsetResponse;
 import com.prac.kafka.protocol.response.ProduceResponse;
 
 import io.netty.bootstrap.Bootstrap;
@@ -97,5 +101,19 @@ public class BrokerClient {
         Packet packet = new Packet(Command.FETCH, objectMapper.writeValueAsBytes(request));
         Packet response = send(packet);
         return objectMapper.readValue(response.payload(), FetchResponse.class);
+    }
+
+    public CommitOffsetResponse commitOffset(String consumerId, String topic, long offset) throws Exception {
+        CommitOffsetRequest request = new CommitOffsetRequest(consumerId, topic, offset);
+        Packet packet = new Packet(Command.COMMIT_OFFSET, objectMapper.writeValueAsBytes(request));
+        Packet response = send(packet);
+        return objectMapper.readValue(response.payload(), CommitOffsetResponse.class);
+    }
+
+    public GetOffsetResponse getCommittedOffset(String consumerId, String topic) throws Exception {
+        GetOffsetRequest request = new GetOffsetRequest(consumerId, topic);
+        Packet packet = new Packet(Command.GET_OFFSET, objectMapper.writeValueAsBytes(request));
+        Packet response = send(packet);
+        return objectMapper.readValue(response.payload(), GetOffsetResponse.class);
     }
 }

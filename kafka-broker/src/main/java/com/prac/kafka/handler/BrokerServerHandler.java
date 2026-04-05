@@ -16,13 +16,19 @@ public class BrokerServerHandler extends SimpleChannelInboundHandler<Packet> {
     private final ProduceHandler produceHandler;
     private final FetchHandler fetchHandler;
     private final CreateTopicHandler createTopicHandler;
+    private final CommitOffsetHandler commitOffsetHandler;
+    private final GetOffsetHandler getOffsetHandler;
 
     public BrokerServerHandler(ProduceHandler produceHandler,
                                FetchHandler fetchHandler,
-                               CreateTopicHandler createTopicHandler) {
+                               CreateTopicHandler createTopicHandler,
+                               CommitOffsetHandler commitOffsetHandler,
+                               GetOffsetHandler getOffsetHandler) {
         this.produceHandler = produceHandler;
         this.fetchHandler = fetchHandler;
         this.createTopicHandler = createTopicHandler;
+        this.commitOffsetHandler = commitOffsetHandler;
+        this.getOffsetHandler = getOffsetHandler;
     }
 
     @Override
@@ -39,6 +45,8 @@ public class BrokerServerHandler extends SimpleChannelInboundHandler<Packet> {
             case PRODUCE -> produceHandler.handle(ctx, packet);
             case FETCH -> fetchHandler.handle(ctx, packet);
             case CREATE_TOPIC -> createTopicHandler.handle(ctx, packet);
+            case COMMIT_OFFSET -> commitOffsetHandler.handle(ctx, packet);
+            case GET_OFFSET -> getOffsetHandler.handle(ctx, packet);
             default -> handleUnknown(ctx, packet);
         }
     }

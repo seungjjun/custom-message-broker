@@ -1,8 +1,10 @@
 package com.prac.kafka.bootstrap;
 
 import com.prac.kafka.handler.BrokerServerHandler;
+import com.prac.kafka.handler.CommitOffsetHandler;
 import com.prac.kafka.handler.CreateTopicHandler;
 import com.prac.kafka.handler.FetchHandler;
+import com.prac.kafka.handler.GetOffsetHandler;
 import com.prac.kafka.handler.ProduceHandler;
 import com.prac.kafka.protocol.MessageDecoder;
 import com.prac.kafka.protocol.MessageEncoder;
@@ -25,16 +27,22 @@ public class KafkaBrokerServer {
     private final ProduceHandler produceHandler;
     private final FetchHandler fetchHandler;
     private final CreateTopicHandler createTopicHandler;
+    private final CommitOffsetHandler commitOffsetHandler;
+    private final GetOffsetHandler getOffsetHandler;
     private final int port;
 
     public KafkaBrokerServer(int port,
                              ProduceHandler produceHandler,
                              FetchHandler fetchHandler,
-                             CreateTopicHandler createTopicHandler) {
+                             CreateTopicHandler createTopicHandler,
+                             CommitOffsetHandler commitOffsetHandler,
+                             GetOffsetHandler getOffsetHandler) {
         this.port = port;
         this.produceHandler = produceHandler;
         this.fetchHandler = fetchHandler;
         this.createTopicHandler = createTopicHandler;
+        this.commitOffsetHandler = commitOffsetHandler;
+        this.getOffsetHandler = getOffsetHandler;
     }
 
     public void start() throws InterruptedException {
@@ -54,7 +62,13 @@ public class KafkaBrokerServer {
                         pipeline.addLast(new MessageFrameDecoder(MAX_FRAME_LENGTH, 0, 4, 0, 4));
                         pipeline.addLast(new MessageDecoder());
                         pipeline.addLast(new MessageEncoder());
-                        pipeline.addLast(new BrokerServerHandler(produceHandler, fetchHandler, createTopicHandler));
+                        pipeline.addLast(new BrokerServerHandler(
+                            produceHandler,
+                            fetchHandler,
+                            createTopicHandler,
+                            commitOffsetHandler,
+                            getOffsetHandler
+                        ));
                     }
                 });
 
