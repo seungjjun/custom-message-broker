@@ -1,9 +1,13 @@
 package com.prac.kafka.bootstrap;
 
 import com.prac.kafka.handler.BrokerServerHandler;
+import com.prac.kafka.handler.CreateTopicHandler;
+import com.prac.kafka.handler.FetchHandler;
+import com.prac.kafka.handler.ProduceHandler;
 import com.prac.kafka.protocol.MessageDecoder;
 import com.prac.kafka.protocol.MessageEncoder;
 import com.prac.kafka.protocol.MessageFrameDecoder;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -18,10 +22,19 @@ public class KafkaBrokerServer {
 
     private static final int MAX_FRAME_LENGTH = 1_048_576;
 
+    private final ProduceHandler produceHandler;
+    private final FetchHandler fetchHandler;
+    private final CreateTopicHandler createTopicHandler;
     private final int port;
 
-    public KafkaBrokerServer(int port) {
+    public KafkaBrokerServer(int port,
+                             ProduceHandler produceHandler,
+                             FetchHandler fetchHandler,
+                             CreateTopicHandler createTopicHandler) {
         this.port = port;
+        this.produceHandler = produceHandler;
+        this.fetchHandler = fetchHandler;
+        this.createTopicHandler = createTopicHandler;
     }
 
     public void start() throws InterruptedException {
@@ -41,7 +54,7 @@ public class KafkaBrokerServer {
                         pipeline.addLast(new MessageFrameDecoder(MAX_FRAME_LENGTH, 0, 4, 0, 4));
                         pipeline.addLast(new MessageDecoder());
                         pipeline.addLast(new MessageEncoder());
-                        pipeline.addLast(new BrokerServerHandler());
+                        pipeline.addLast(new BrokerServerHandler(produceHandler, fetchHandler, createTopicHandler));
                     }
                 });
 

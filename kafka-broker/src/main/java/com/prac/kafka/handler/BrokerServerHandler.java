@@ -13,6 +13,18 @@ public class BrokerServerHandler extends SimpleChannelInboundHandler<Packet> {
 
     private static final Logger log = LoggerFactory.getLogger(BrokerServerHandler.class);
 
+    private final ProduceHandler produceHandler;
+    private final FetchHandler fetchHandler;
+    private final CreateTopicHandler createTopicHandler;
+
+    public BrokerServerHandler(ProduceHandler produceHandler,
+                               FetchHandler fetchHandler,
+                               CreateTopicHandler createTopicHandler) {
+        this.produceHandler = produceHandler;
+        this.fetchHandler = fetchHandler;
+        this.createTopicHandler = createTopicHandler;
+    }
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         log.info("Client connected: {}", ctx.channel().remoteAddress());
@@ -20,12 +32,13 @@ public class BrokerServerHandler extends SimpleChannelInboundHandler<Packet> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Packet packet) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
         Command command = packet.command();
 
         switch (command) {
-            case PRODUCE -> handleProduce(ctx, packet);
-            case FETCH -> handleFetch(ctx, packet);
+            case PRODUCE -> produceHandler.handle(ctx, packet);
+            case FETCH -> fetchHandler.handle(ctx, packet);
+            case CREATE_TOPIC -> createTopicHandler.handle(ctx, packet);
             default -> handleUnknown(ctx, packet);
         }
     }
@@ -45,48 +58,10 @@ public class BrokerServerHandler extends SimpleChannelInboundHandler<Packet> {
         });
     }
 
-    private void handleProduce(ChannelHandlerContext ctx, Packet packet) {
-        String payload = extractPayloadFrom(packet);
-        log.info("Received PRODUCE packet. payload={}", payload);
-
-        if (payload.isBlank()) {
-            log.warn("PRODUCE payload is empty");
-            Packet response = new Packet(Command.ERROR, "PRODUCE ERROR".getBytes(StandardCharsets.UTF_8));
-            ctx.writeAndFlush(response);
-            return;
-        }
-
-        Packet response = new Packet(Command.PRODUCE_ACK, "PRODUCE OK".getBytes(StandardCharsets.UTF_8));
-        ctx.writeAndFlush(response);
-    }
-
-    private void handleFetch(ChannelHandlerContext ctx, Packet packet) {
-        String payload = extractPayloadFrom(packet);
-        log.info("Received FETCH packet. payload={}", payload);
-
-        if (payload.isBlank()) {
-            log.warn("FETCH payload is empty");
-            Packet response = new Packet(Command.ERROR, "FETCH ERROR".getBytes(StandardCharsets.UTF_8));
-            ctx.writeAndFlush(response);
-            return;
-        }
-
-        Packet response = new Packet(Command.FETCH_RESPONSE, "example response".getBytes(StandardCharsets.UTF_8));
-        ctx.writeAndFlush(response);
-    }
-
     private void handleUnknown(ChannelHandlerContext ctx, Packet packet) {
         log.error("Received unknown packet. command={}", packet.command());
 
         Packet errorResponse = new Packet(Command.ERROR, "UNKNOWN_COMMAND".getBytes(StandardCharsets.UTF_8));
         ctx.writeAndFlush(errorResponse);
-    }
-
-    private String extractPayloadFrom(Packet packet) {
-        byte[] payload = packet.payload();
-        if (payload == null || payload.length == 0) {
-            return "";
-        }
-        return new String(payload, StandardCharsets.UTF_8);
     }
 }
