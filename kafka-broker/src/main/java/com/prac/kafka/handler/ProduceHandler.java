@@ -4,7 +4,8 @@ import com.prac.kafka.common.model.Command;
 import com.prac.kafka.common.model.Packet;
 import com.prac.kafka.protocol.request.ProduceRequest;
 import com.prac.kafka.protocol.response.ProduceResponse;
-import com.prac.kafka.storage.TopicLog;
+import com.prac.kafka.storage.Partition;
+import com.prac.kafka.storage.PartitionedTopic;
 import com.prac.kafka.storage.TopicManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,13 +35,15 @@ public class ProduceHandler {
 
             log.info("Handling produce request. topic={}, key={}", produceRequest.topic(), produceRequest.key());
 
-            TopicLog topicLog = topicManager.getTopicLog(produceRequest.topic());
-            long offset = topicLog.append(produceRequest.key(), produceRequest.value().getBytes(StandardCharsets.UTF_8));
+            PartitionedTopic partitionedTopic = topicManager.getTopic(produceRequest.topic());
+            int partitionId = partitionedTopic.selectPartition(produceRequest.key());
+            Partition partition = partitionedTopic.getPartition(partitionId);
+            long offset = partition.append(produceRequest.key(), produceRequest.value().getBytes(StandardCharsets.UTF_8));
 
-            log.info("Produce succeeded. topic={}, key={}, offset={}, channel={}",
-                produceRequest.topic(), produceRequest.key(), offset, ctx.channel().id());
+            log.info("Produce succeeded. topic={}, key={}, partition={}, offset={}, channel={}",
+                produceRequest.topic(), produceRequest.key(), partitionId, offset, ctx.channel().id());
 
-            ProduceResponse produceResponse = new ProduceResponse(produceRequest.topic(), offset);
+            ProduceResponse produceResponse = new ProduceResponse(produceRequest.topic(), partitionId, offset);
             Packet response = new Packet(Command.PRODUCE_ACK, objectMapper.writeValueAsBytes(produceResponse));
             ctx.writeAndFlush(response);
         } catch (IllegalArgumentException e) {

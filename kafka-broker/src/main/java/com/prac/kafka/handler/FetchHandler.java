@@ -7,7 +7,8 @@ import com.prac.kafka.common.model.Record;
 import com.prac.kafka.protocol.request.FetchRequest;
 import com.prac.kafka.protocol.response.FetchRecord;
 import com.prac.kafka.protocol.response.FetchResponse;
-import com.prac.kafka.storage.TopicLog;
+import com.prac.kafka.storage.Partition;
+import com.prac.kafka.storage.PartitionedTopic;
 import com.prac.kafka.storage.TopicManager;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.List;
@@ -32,11 +33,12 @@ public class FetchHandler {
         try {
             FetchRequest fetchRequest = objectMapper.readValue(packet.payload(), FetchRequest.class);
 
-            log.info("Handling fetch request. topic={}, offset={}, maxRecords={}",
-                fetchRequest.topic(), fetchRequest.offset(), fetchRequest.maxRecords());
+            log.info("Handling fetch request. topic={}, partition={}, offset={}, maxRecords={}",
+                fetchRequest.topic(), fetchRequest.partition(), fetchRequest.offset(), fetchRequest.maxRecords());
 
-            TopicLog topicLog = topicManager.getTopicLog(fetchRequest.topic());
-            List<Record> records = topicLog.fetch(fetchRequest.offset(), fetchRequest.maxRecords());
+            PartitionedTopic partitionedTopic = topicManager.getTopic(fetchRequest.topic());
+            Partition partition = partitionedTopic.getPartition(fetchRequest.partition());
+            List<Record> records = partition.fetch(fetchRequest.offset(), fetchRequest.maxRecords());
             List<FetchRecord> fetchRecords = records.stream().map(FetchRecord::from).toList();
 
             long nextOffset = fetchRecords.isEmpty()

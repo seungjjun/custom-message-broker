@@ -13,8 +13,8 @@ public class ProducerMain {
         BrokerClient client = new BrokerClient("localhost", 9092);
         client.connect();
 
-        CreateTopicResponse topicRes = client.createTopic("payments");
-        log.info("토픽 생성: {}", topicRes.topic());
+        CreateTopicResponse topicRes = client.createTopic("payments", 3);
+        log.info("토픽 생성: {}, partitions: {}", topicRes.topic(), topicRes.partitions());
 
         ProduceResponse res1 = client.produce("payments", "order-001", "{\"amount\":5000}");
         log.info("produce offset: {}", res1.offset());

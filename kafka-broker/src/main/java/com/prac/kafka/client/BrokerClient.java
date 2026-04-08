@@ -82,8 +82,8 @@ public class BrokerClient {
         group.shutdownGracefully();
     }
 
-    public CreateTopicResponse createTopic(String topic) throws Exception {
-        CreateTopicRequest request = new CreateTopicRequest(topic);
+    public CreateTopicResponse createTopic(String topic, int partitions) throws Exception {
+        CreateTopicRequest request = new CreateTopicRequest(topic, partitions);
         Packet packet = new Packet(Command.CREATE_TOPIC, objectMapper.writeValueAsBytes(request));
         Packet response = send(packet);
         return objectMapper.readValue(response.payload(), CreateTopicResponse.class);
@@ -96,22 +96,22 @@ public class BrokerClient {
         return objectMapper.readValue(response.payload(), ProduceResponse.class);
     }
 
-    public FetchResponse fetch(String topic, long offset, long maxRecords) throws Exception {
-        FetchRequest request = new FetchRequest(topic, offset, maxRecords);
+    public FetchResponse fetch(String topic, int partition, long offset, long maxRecords) throws Exception {
+        FetchRequest request = new FetchRequest(topic, partition, offset, maxRecords);
         Packet packet = new Packet(Command.FETCH, objectMapper.writeValueAsBytes(request));
         Packet response = send(packet);
         return objectMapper.readValue(response.payload(), FetchResponse.class);
     }
 
-    public CommitOffsetResponse commitOffset(String consumerId, String topic, long offset) throws Exception {
-        CommitOffsetRequest request = new CommitOffsetRequest(consumerId, topic, offset);
+    public CommitOffsetResponse commitOffset(String consumerId, String topic, int partition, long offset) throws Exception {
+        CommitOffsetRequest request = new CommitOffsetRequest(consumerId, topic, partition, offset);
         Packet packet = new Packet(Command.COMMIT_OFFSET, objectMapper.writeValueAsBytes(request));
         Packet response = send(packet);
         return objectMapper.readValue(response.payload(), CommitOffsetResponse.class);
     }
 
-    public GetOffsetResponse getCommittedOffset(String consumerId, String topic) throws Exception {
-        GetOffsetRequest request = new GetOffsetRequest(consumerId, topic);
+    public GetOffsetResponse getCommittedOffset(String consumerId, String topic, int partition) throws Exception {
+        GetOffsetRequest request = new GetOffsetRequest(consumerId, topic, partition);
         Packet packet = new Packet(Command.GET_OFFSET, objectMapper.writeValueAsBytes(request));
         Packet response = send(packet);
         return objectMapper.readValue(response.payload(), GetOffsetResponse.class);

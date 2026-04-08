@@ -12,13 +12,15 @@ public class CommitStrategyConsumer {
     private final BrokerClient client;
     private final String consumerId;
     private final String topic;
+    private final int partition;
     private final int maxRecords;
     private long crashAtOffset = -1;
 
-    public CommitStrategyConsumer(BrokerClient client, String consumerId, String topic, int maxRecords) {
+    public CommitStrategyConsumer(BrokerClient client, String consumerId, String topic, int partition, int maxRecords) {
         this.client = client;
         this.consumerId = consumerId;
         this.topic = topic;
+        this.partition = partition;
         this.maxRecords = maxRecords;
     }
 
@@ -27,11 +29,11 @@ public class CommitStrategyConsumer {
     }
 
     public void consumeAtMostOnce() throws Exception {
-        long offset = client.getCommittedOffset(consumerId, topic).committed();
-        FetchResponse response = client.fetch(topic, offset, maxRecords);
+        long offset = client.getCommittedOffset(consumerId, topic, partition).committed();
+        FetchResponse response = client.fetch(topic, partition, offset, maxRecords);
 
         // 처리 전에 커밋
-        client.commitOffset(consumerId, topic, offset + response.records().size());
+        client.commitOffset(consumerId, topic, partition, offset + response.records().size());
 
         for (FetchRecord record : response.records()) {
             process(record);
@@ -39,8 +41,8 @@ public class CommitStrategyConsumer {
     }
 
     public void consumeAtLeastOnce() throws Exception {
-        long offset = client.getCommittedOffset(consumerId, topic).committed();
-        FetchResponse response = client.fetch(topic, offset, maxRecords);
+        long offset = client.getCommittedOffset(consumerId, topic, partition).committed();
+        FetchResponse response = client.fetch(topic, partition, offset, maxRecords);
 
         // 전부 처리하고
         for (FetchRecord record : response.records()) {
@@ -48,7 +50,7 @@ public class CommitStrategyConsumer {
         }
 
         // 그 다음 커밋
-        client.commitOffset(consumerId, topic, offset + response.records().size());
+        client.commitOffset(consumerId, topic, partition, offset + response.records().size());
     }
 
     private void process(FetchRecord record) {

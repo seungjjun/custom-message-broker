@@ -28,9 +28,9 @@ public class GetOffsetHandler {
         try {
             GetOffsetRequest getOffsetRequest = objectMapper.readValue(packet.payload(), GetOffsetRequest.class);
 
-            long committed = offsetManager.getCommitted(getOffsetRequest.consumerId(), getOffsetRequest.topic());
+            long committed = offsetManager.getCommitted(getOffsetRequest.consumerId(), getOffsetRequest.topic(), getOffsetRequest.partition());
 
-            GetOffsetResponse getOffsetResponse = new GetOffsetResponse(getOffsetRequest.consumerId(), getOffsetRequest.topic(), committed);
+            GetOffsetResponse getOffsetResponse = new GetOffsetResponse(getOffsetRequest.consumerId(), getOffsetRequest.topic(), getOffsetRequest.partition(), committed);
             Packet response = new Packet(Command.GET_OFFSET_RESPONSE, objectMapper.writeValueAsBytes(getOffsetResponse));
             ctx.writeAndFlush(response);
         } catch (Exception e) {

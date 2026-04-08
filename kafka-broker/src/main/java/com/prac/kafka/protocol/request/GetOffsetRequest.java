@@ -1,4 +1,4 @@
 package com.prac.kafka.protocol.request;
 
-public record GetOffsetRequest(String consumerId, String topic) {
+public record GetOffsetRequest(String consumerId, String topic, int partition) {
 }

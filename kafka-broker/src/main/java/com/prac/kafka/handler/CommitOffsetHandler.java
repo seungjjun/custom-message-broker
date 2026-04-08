@@ -28,9 +28,9 @@ public class CommitOffsetHandler {
         try {
             CommitOffsetRequest offsetRequest = objectMapper.readValue(packet.payload(), CommitOffsetRequest.class);
 
-            offsetManager.commit(offsetRequest.consumerId(), offsetRequest.topic(), offsetRequest.offset());
+            offsetManager.commit(offsetRequest.consumerId(), offsetRequest.topic(), offsetRequest.partition(), offsetRequest.offset());
 
-            CommitOffsetResponse commitOffsetResponse = new CommitOffsetResponse(offsetRequest.consumerId(), offsetRequest.topic(), offsetRequest.offset());
+            CommitOffsetResponse commitOffsetResponse = new CommitOffsetResponse(offsetRequest.consumerId(), offsetRequest.topic(), offsetRequest.partition(), offsetRequest.offset());
             Packet response = new Packet(Command.COMMIT_ACK, objectMapper.writeValueAsBytes(commitOffsetResponse));
             ctx.writeAndFlush(response);
         } catch (Exception e) {

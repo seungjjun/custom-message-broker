@@ -30,11 +30,11 @@ public class CreateTopicHandler {
 
             log.info("Handling create topic request. topic={}", createTopicRequest);
 
-            topicManager.createTopic(createTopicRequest.topic());
+            topicManager.createTopic(createTopicRequest.topic(), createTopicRequest.partitions());
 
-            log.info("Topic created. topic={}, channel={}", createTopicRequest.topic(), ctx.channel().id());
+            log.info("Topic created. topic={}, partitions={}, channel={}", createTopicRequest.topic(), createTopicRequest.partitions(), ctx.channel().id());
 
-            CreateTopicResponse createTopicResponse = new CreateTopicResponse(createTopicRequest.topic());
+            CreateTopicResponse createTopicResponse = new CreateTopicResponse(createTopicRequest.topic(), createTopicRequest.partitions());
             Packet response = new Packet(Command.TOPIC_ACK, objectMapper.writeValueAsBytes(createTopicResponse));
             ctx.writeAndFlush(response);
         } catch (IllegalArgumentException e) {

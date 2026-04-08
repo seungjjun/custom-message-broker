@@ -21,7 +21,7 @@ public class CrashSimulationMain {
     }
 
     private static void simulateAtMostOnce(BrokerClient client) throws Exception {
-        CommitStrategyConsumer consumer = new CommitStrategyConsumer(client, "at-most-once-consumer", "payments", 3);
+        CommitStrategyConsumer consumer = new CommitStrategyConsumer(client, "at-most-once-consumer", "payments", 0, 3);
         consumer.setCrashAtOffset(1);
 
         // 1회차: 처리 중 crash
@@ -37,12 +37,12 @@ public class CrashSimulationMain {
         consumer.setCrashAtOffset(-1); // crash 해제
         consumer.consumeAtMostOnce();
 
-        long committed = client.getCommittedOffset("at-most-once-consumer", "payments").committed();
+        long committed = client.getCommittedOffset("at-most-once-consumer", "payments", 0).committed();
         log.info("결과: committed offset={}, 레코드 1, 2는 처리되지 않았지만 커밋됨 → 유실!", committed);
     }
 
     private static void simulateAtLeastOnce(BrokerClient client) throws Exception {
-        CommitStrategyConsumer consumer = new CommitStrategyConsumer(client, "at-least-once-consumer", "payments", 3);
+        CommitStrategyConsumer consumer = new CommitStrategyConsumer(client, "at-least-once-consumer", "payments", 0, 3);
         consumer.setCrashAtOffset(1);
 
         // 1회차: 처리 중 crash
@@ -58,7 +58,7 @@ public class CrashSimulationMain {
         consumer.setCrashAtOffset(-1); // crash 해제
         consumer.consumeAtLeastOnce();
 
-        long committed = client.getCommittedOffset("at-least-once-consumer", "payments").committed();
+        long committed = client.getCommittedOffset("at-least-once-consumer", "payments", 0).committed();
         log.info("결과: committed offset={}, 레코드 0은 다시 처리됨 → 중복! 하지만 유실 없음", committed);
     }
 }

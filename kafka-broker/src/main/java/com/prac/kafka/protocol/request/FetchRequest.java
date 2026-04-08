@@ -1,4 +1,4 @@
 package com.prac.kafka.protocol.request;
 
-public record FetchRequest(String topic, long offset, long maxRecords) {
+public record FetchRequest(String topic, int partition, long offset, long maxRecords) {
 }
