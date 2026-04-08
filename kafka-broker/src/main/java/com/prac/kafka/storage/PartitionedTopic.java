@@ -28,6 +28,10 @@ public class PartitionedTopic {
         return partitions[partitionId];
     }
 
+    public String getName() {
+        return name;
+    }
+
     public int partitionCount() {
         return partitions.length;
     }

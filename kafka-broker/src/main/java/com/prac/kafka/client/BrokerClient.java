@@ -5,11 +5,14 @@ import com.prac.kafka.common.model.Packet;
 import com.prac.kafka.protocol.MessageDecoder;
 import com.prac.kafka.protocol.MessageEncoder;
 import com.prac.kafka.protocol.MessageFrameDecoder;
+import com.prac.kafka.protocol.request.BatchProduceRequest;
 import com.prac.kafka.protocol.request.CommitOffsetRequest;
 import com.prac.kafka.protocol.request.CreateTopicRequest;
 import com.prac.kafka.protocol.request.FetchRequest;
 import com.prac.kafka.protocol.request.GetOffsetRequest;
+import com.prac.kafka.protocol.request.ProduceMessage;
 import com.prac.kafka.protocol.request.ProduceRequest;
+import com.prac.kafka.protocol.response.BatchProduceResponse;
 import com.prac.kafka.protocol.response.CommitOffsetResponse;
 import com.prac.kafka.protocol.response.CreateTopicResponse;
 import com.prac.kafka.protocol.response.FetchResponse;
@@ -26,6 +29,7 @@ import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -115,5 +119,12 @@ public class BrokerClient {
         Packet packet = new Packet(Command.GET_OFFSET, objectMapper.writeValueAsBytes(request));
         Packet response = send(packet);
         return objectMapper.readValue(response.payload(), GetOffsetResponse.class);
+    }
+
+    public BatchProduceResponse batchProduce(String topic, List<ProduceMessage> messages) throws Exception {
+        BatchProduceRequest request = new BatchProduceRequest(topic, messages);
+        Packet packet = new Packet(Command.BATCH_PRODUCE, objectMapper.writeValueAsBytes(request));
+        Packet response = send(packet);
+        return objectMapper.readValue(response.payload(), BatchProduceResponse.class);
     }
 }

@@ -1,5 +1,6 @@
 package com.prac.kafka.bootstrap;
 
+import com.prac.kafka.handler.BatchProduceHandler;
 import com.prac.kafka.handler.BrokerServerHandler;
 import com.prac.kafka.handler.CommitOffsetHandler;
 import com.prac.kafka.handler.CreateTopicHandler;
@@ -29,6 +30,7 @@ public class KafkaBrokerServer {
     private final CreateTopicHandler createTopicHandler;
     private final CommitOffsetHandler commitOffsetHandler;
     private final GetOffsetHandler getOffsetHandler;
+    private final BatchProduceHandler batchProduceHandler;
     private final int port;
 
     public KafkaBrokerServer(int port,
@@ -36,13 +38,15 @@ public class KafkaBrokerServer {
                              FetchHandler fetchHandler,
                              CreateTopicHandler createTopicHandler,
                              CommitOffsetHandler commitOffsetHandler,
-                             GetOffsetHandler getOffsetHandler) {
+                             GetOffsetHandler getOffsetHandler,
+                             BatchProduceHandler batchProduceHandler) {
         this.port = port;
         this.produceHandler = produceHandler;
         this.fetchHandler = fetchHandler;
         this.createTopicHandler = createTopicHandler;
         this.commitOffsetHandler = commitOffsetHandler;
         this.getOffsetHandler = getOffsetHandler;
+        this.batchProduceHandler = batchProduceHandler;
     }
 
     public void start() throws InterruptedException {
@@ -67,7 +71,8 @@ public class KafkaBrokerServer {
                             fetchHandler,
                             createTopicHandler,
                             commitOffsetHandler,
-                            getOffsetHandler
+                            getOffsetHandler,
+                            batchProduceHandler
                         ));
                     }
                 });

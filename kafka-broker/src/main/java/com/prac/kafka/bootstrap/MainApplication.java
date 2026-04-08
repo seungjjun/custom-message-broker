@@ -2,6 +2,7 @@ package com.prac.kafka.bootstrap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prac.kafka.consumer.OffsetManager;
+import com.prac.kafka.handler.BatchProduceHandler;
 import com.prac.kafka.handler.CommitOffsetHandler;
 import com.prac.kafka.handler.CreateTopicHandler;
 import com.prac.kafka.handler.FetchHandler;
@@ -21,7 +22,8 @@ public class MainApplication {
         CreateTopicHandler createTopicHandler = new CreateTopicHandler(topicManager, objectMapper);
         CommitOffsetHandler commitOffsetHandler = new CommitOffsetHandler(offsetManager, objectMapper);
         GetOffsetHandler getOffsetHandler = new GetOffsetHandler(offsetManager, objectMapper);
+        BatchProduceHandler batchProduceHandler = new BatchProduceHandler(topicManager, objectMapper);
 
-        new KafkaBrokerServer(9092, produceHandler, fetchHandler, createTopicHandler, commitOffsetHandler, getOffsetHandler).start();
+        new KafkaBrokerServer(9092, produceHandler, fetchHandler, createTopicHandler, commitOffsetHandler, getOffsetHandler, batchProduceHandler).start();
     }
 }

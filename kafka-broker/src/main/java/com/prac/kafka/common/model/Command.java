@@ -14,6 +14,8 @@ public enum Command {
     COMMIT_ACK((byte) 0x08),
     GET_OFFSET((byte) 0x09),
     GET_OFFSET_RESPONSE((byte) 0x0A),
+    BATCH_PRODUCE((byte) 0x0B),
+    BATCH_PRODUCE_ACK((byte) 0x0C),
     ERROR((byte) 0x0F);
 
     private final byte opcode;
